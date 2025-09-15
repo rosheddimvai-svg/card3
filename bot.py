@@ -4,21 +4,17 @@ from telegram.ext import (
     CallbackQueryHandler, ContextTypes, filters
 )
 
-# === Bot Token এবং চ্যানেল আইডি ===
 TOKEN = "7845699149:AAEEKpzHFt5gd6LbApfXSsE8de64f8IaGx0"
 
 PENDING_CHANNEL = -1003036699455
 APPROVED_CHANNEL = -1002944346537
 BROADCAST_CHANNEL = -1003018121134
 
-# ইউজারদের লিস্ট (broadcast এর জন্য)
 user_list = set()
 
-
-# === Start Menu ===
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.message.from_user
-    user_list.add(user.id)  # প্রতিটা ইউজার সেভ হবে
+    user_list.add(user.id)
     keyboard = [
         [InlineKeyboardButton("🪙 Card Sell", callback_data="card_sell")],
         [InlineKeyboardButton("💼 Wallet Setup / Rules", callback_data="wallet_rules")],
@@ -29,8 +25,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "স্বাগতম! নিচ থেকে একটি অপশন সিলেক্ট করুন 👇", reply_markup=reply_markup
     )
 
-
-# === Callback Menu ===
 async def handle_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -39,17 +33,12 @@ async def handle_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.message.reply_text("অনুগ্রহ করে আপনার কার্ড ডিটেলস পাঠান।")
     elif query.data == "wallet_rules":
         await query.message.reply_text(
-            "💼 Wallet Setup / Rules:
-
-আপনার ওয়ালেট ঠিকানা সঠিকভাবে পাঠাবেন।
-❌ ভুল তথ্য দিলে কার্ড রিজেক্ট হবে।"
+            "💼 Wallet Setup / Rules:\n\nআপনার ওয়ালেট ঠিকানা সঠিকভাবে পাঠাবেন।\n❌ ভুল তথ্য দিলে কার্ড রিজেক্ট হবে।"
         )
 
-
-# === Card Submission ===
 async def forward_card(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.message.from_user
-    user_list.add(user.id)  # ইউজার লিস্টে অ্যাড
+    user_list.add(user.id)
 
     text = f"""
 📩 নতুন কার্ড সাবমিশন:
@@ -64,11 +53,8 @@ async def forward_card(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("❌ Reject", callback_data=f"reject_{user.id}")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-
     await context.bot.send_message(PENDING_CHANNEL, text, reply_markup=reply_markup)
 
-
-# === Confirm / Reject ===
 async def card_action(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     action, user_id = query.data.split("_")
@@ -82,8 +68,6 @@ async def card_action(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await query.answer()
 
-
-# === Broadcast Command ===
 async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.id != BROADCAST_CHANNEL:
         await update.message.reply_text("⚠️ এই কমান্ড শুধু Broadcast চ্যানেলে ব্যবহার করা যাবে।")
@@ -97,15 +81,12 @@ async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     for uid in user_list:
         try:
-            await context.bot.send_message(uid, f"📢 Broadcast:
-{message}")
+            await context.bot.send_message(uid, f"📢 Broadcast:\n{message}")
         except:
-            pass  # যাদের মেসেজ পাঠানো যাবে না তাদের স্কিপ
+            pass
 
     await update.message.reply_text("✅ Broadcast পাঠানো হয়েছে।")
 
-
-# === Main ===
 def main():
     app = Application.builder().token(TOKEN).build()
 
@@ -117,7 +98,6 @@ def main():
 
     print("Bot is running...")
     app.run_polling()
-
 
 if __name__ == "__main__":
     main()
